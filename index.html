@@ -1512,5 +1512,312 @@
         document.getElementById('messageInput').focus();
         init();
     </script>
+
+            <!-- Страница админа (скрытая) -->
+        <div class="page" id="adminPage">
+            <div class="container">
+                <div class="header">
+                    <h1>🔧 Панель администратора</h1>
+                    <p>Просмотр отзывов и статистики системы</p>
+                </div>
+                <div class="chat-container">
+                    <div class="controls">
+                        <button class="btn" onclick="showAdminSection('feedback')" style="background: #e74c3c;">
+                            📝 Жалобы и идеи
+                        </button>
+                        <button class="btn" onclick="showAdminSection('comments')" style="background: #3498db;">
+                            💬 Комментарии
+                        </button>
+                        <button class="btn" onclick="showAdminSection('stats')" style="background: #27ae60;">
+                            📊 Статистика
+                        </button>
+                        <button class="btn" onclick="exportData()" style="background: #f39c12;">
+                            📤 Экспорт данных
+                        </button>
+                        <button class="btn" onclick="logoutAdmin()" style="background: #95a5a6;">
+                            🔒 Выйти
+                        </button>
+                    </div>
+
+                    <!-- Секция жалоб и идей -->
+                    <div id="adminFeedbackSection" class="admin-section">
+                        <h3>📝 Жалобы и идеи пользователей</h3>
+                        <div style="margin: 10px 0;">
+                            <select id="feedbackFilter" onchange="filterFeedback()" style="padding: 10px; border-radius: 5px;">
+                                <option value="all">Все типы</option>
+                                <option value="bug">Ошибки</option>
+                                <option value="suggestion">Идеи</option>
+                                <option value="complaint">Жалобы</option>
+                            </select>
+                            <button class="btn" onclick="clearOldFeedback()" style="background: #95a5a6; margin-left: 10px;">
+                                🗑️ Удалить старые
+                            </button>
+                        </div>
+                        <div id="adminFeedbackList" class="comment-section">
+                            <!-- Список жалоб будет здесь -->
+                        </div>
+                    </div>
+
+                    <!-- Секция комментариев -->
+                    <div id="adminCommentsSection" class="admin-section" style="display: none;">
+                        <h3>💬 Комментарии пользователей</h3>
+                        <button class="btn" onclick="clearComments()" style="background: #95a5a6;">
+                            🗑️ Очистить все комментарии
+                        </button>
+                        <div id="adminCommentsList" class="comment-section">
+                            <!-- Список комментариев будет здесь -->
+                        </div>
+                    </div>
+
+                    <!-- Секция статистики -->
+                    <div id="adminStatsSection" class="admin-section" style="display: none;">
+                        <h3>📊 Статистика системы</h3>
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                <div class="stat-value" id="adminTotalFeedback">0</div>
+                                <div class="stat-label">Всего отзывов</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value" id="adminTotalComments">0</div>
+                                <div class="stat-label">Всего комментариев</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value" id="adminBugCount">0</div>
+                                <div class="stat-label">Ошибок</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value" id="adminSuggestionCount">0</div>
+                                <div class="stat-label">Идей</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 🔐 АДМИН-СИСТЕМА
+        const ADMIN_PASSWORD = "creator_ss1"; // ЗАМЕНИ на свой пароль!
+
+        // Функции для админ-панели
+        function showAdminPage() {
+            if (isAdminAuthenticated()) {
+                showPage('admin');
+                loadAdminData();
+            } else {
+                authenticateAdmin();
+            }
+        }
+
+        function isAdminAuthenticated() {
+            return localStorage.getItem('ss1_admin_auth') === 'true';
+        }
+
+        function authenticateAdmin() {
+            const password = prompt("🔐 Введите пароль админа:");
+            if (password === ADMIN_PASSWORD) {
+                localStorage.setItem('ss1_admin_auth', 'true');
+                showPage('admin');
+                loadAdminData();
+                alert("✅ Доступ разрешён!");
+            } else {
+                alert("❌ Неверный пароль!");
+                showPage('main');
+            }
+        }
+
+        function logoutAdmin() {
+            localStorage.removeItem('ss1_admin_auth');
+            alert("🔒 Вы вышли из админ-панели");
+            showPage('main');
+        }
+
+        function showAdminSection(section) {
+            document.querySelectorAll('.admin-section').forEach(sec => {
+                sec.style.display = 'none';
+            });
+            document.getElementById('admin' + section.charAt(0).toUpperCase() + section.slice(1) + 'Section').style.display = 'block';
+            if (section === 'feedback') loadAdminFeedback();
+            if (section === 'comments') loadAdminComments();
+            if (section === 'stats') loadAdminStats();
+        }
+
+        function loadAdminData() {
+            loadAdminFeedback();
+            loadAdminComments();
+            loadAdminStats();
+        }
+
+        function loadAdminFeedback() {
+            const feedbackList = document.getElementById('adminFeedbackList');
+            feedbackList.innerHTML = '';
+            
+            feedback.forEach((item, index) => {
+                const typeText = item.type === 'complaint' ? 'Жалоба' : item.type === 'suggestion' ? 'Идея' : 'Ошибка';
+                const typeClass = item.type === 'complaint' ? 'type-complaint' : item.type === 'suggestion' ? 'type-suggestion' : 'type-bug';
+                
+                const feedbackEl = document.createElement('div');
+                feedbackEl.className = `admin-feedback-item ${item.type}`;
+                feedbackEl.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                        <div>
+                            <span class="feedback-type ${typeClass}">
+                                ${typeText}
+                            </span>
+                            <strong>${item.author}</strong>
+                        </div>
+                        <div style="font-size: 0.8em; color: #7f8c8d;">${item.date}</div>
+                    </div>
+                    <div>${item.text}</div>
+                    <button onclick="deleteFeedback(${index})" style="margin-top: 10px; padding: 5px 10px; background: #e74c3c; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                        Удалить
+                    </button>
+                `;
+                feedbackList.appendChild(feedbackEl);
+            });
+        }
+
+        function loadAdminComments() {
+            const commentsList = document.getElementById('adminCommentsList');
+            commentsList.innerHTML = '';
+            
+            comments.forEach((comment, index) => {
+                const commentEl = document.createElement('div');
+                commentEl.className = 'comment';
+                commentEl.innerHTML = `
+                    <div class="comment-header">
+                        <span class="comment-author">${comment.author}</span>
+                        <span class="comment-date">${comment.date}</span>
+                    </div>
+                    <div>${comment.text}</div>
+                    <button onclick="deleteComment(${index})" style="margin-top: 10px; padding: 5px 10px; background: #e74c3c; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                        Удалить
+                    </button>
+                `;
+                commentsList.appendChild(commentEl);
+            });
+        }
+
+        function loadAdminStats() {
+            document.getElementById('adminTotalFeedback').textContent = feedback.length;
+            document.getElementById('adminTotalComments').textContent = comments.length;
+            document.getElementById('adminBugCount').textContent = feedback.filter(f => f.type === 'bug').length;
+            document.getElementById('adminSuggestionCount').textContent = feedback.filter(f => f.type === 'suggestion').length;
+        }
+
+        function filterFeedback() {
+            const filter = document.getElementById('feedbackFilter').value;
+            const items = document.querySelectorAll('.admin-feedback-item');
+            
+            items.forEach(item => {
+                if (filter === 'all' || item.classList.contains(filter)) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+
+        function deleteFeedback(index) {
+            if (confirm('Удалить этот отзыв?')) {
+                feedback.splice(index, 1);
+                localStorage.setItem('ss1_feedback', JSON.stringify(feedback));
+                loadAdminFeedback();
+                loadAdminStats();
+            }
+        }
+
+        function deleteComment(index) {
+            if (confirm('Удалить этот комментарий?')) {
+                comments.splice(index, 1);
+                localStorage.setItem('ss1_comments', JSON.stringify(comments));
+                loadAdminComments();
+                loadAdminStats();
+            }
+        }
+
+        function clearOldFeedback() {
+            if (confirm('Удалить все отзывы старше 30 дней?')) {
+                const now = new Date();
+                feedback = feedback.filter(item => {
+                    const itemDate = new Date(item.date);
+                    const diffTime = now - itemDate;
+                    const diffDays = diffTime / (1000 * 60 * 60 * 24);
+                    return diffDays <= 30;
+                });
+                localStorage.setItem('ss1_feedback', JSON.stringify(feedback));
+                loadAdminFeedback();
+                loadAdminStats();
+            }
+        }
+
+        function clearComments() {
+            if (confirm('Удалить ВСЕ комментарии?')) {
+                comments = [];
+                localStorage.setItem('ss1_comments', JSON.stringify(comments));
+                loadAdminComments();
+                loadAdminStats();
+            }
+        }
+
+        function exportData() {
+            const data = {
+                feedback: feedback,
+                comments: comments,
+                exportDate: new Date().toLocaleString(),
+                version: APP_VERSION
+            };
+            
+            const dataStr = JSON.stringify(data, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `ss1_backup_${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            alert('Данные экспортированы в файл!');
+        }
+    </script>
+
+    <style>
+        .admin-section {
+            margin-top: 20px;
+            padding: 20px;
+            background: var(--light);
+            border-radius: 15px;
+        }
+
+        .admin-feedback-item {
+            background: white;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 10px;
+            border-left: 4px solid #e74c3c;
+        }
+
+        .admin-feedback-item.suggestion {
+            border-left-color: #3498db;
+        }
+
+        .admin-feedback-item.bug {
+            border-left-color: #f39c12;
+        }
+
+        .feedback-type {
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.8em;
+            color: white;
+            margin-right: 10px;
+        }
+
+        .type-complaint { background: #e74c3c; }
+        .type-suggestion { background: #3498db; }
+        .type-bug { background: #f39c12; }
+    </style>
+
 </body>
   </html>
