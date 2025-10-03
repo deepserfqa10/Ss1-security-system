@@ -1024,78 +1024,226 @@
         }
 
         // АДМИН-ПАНЕЛЬ
-        function showAdminPage() {
-            const ADMIN_PASSWORD = "creator_ss1";
-            const userPassword = prompt("🔐 Введите пароль админ-панели:");
-            
-            if (userPassword !== ADMIN_PASSWORD) {
-                alert("❌ Неверный пароль! Доступ запрещен.");
-                return;
-            }
+function showAdminPage() {
+    const ADMIN_PASSWORD = "creator_ss1";
+    const userPassword = prompt("🔐 Введите пароль админ-панели:");
+    
+    if (userPassword !== ADMIN_PASSWORD) {
+        alert("❌ Неверный пароль! Доступ запрещен.");
+        return;
+    }
 
-            // Создаем админ-панель, если её нет
-            let adminPage = document.getElementById('adminPage');
-            if (!adminPage) {
-                adminPage = document.createElement('div');
-                adminPage.id = 'adminPage';
-                adminPage.className = 'page';
-                adminPage.innerHTML = `
-                    <div class="container">
-                        <div class="header">
-                            <h1>🔧 Админ-панель</h1>
-                            <p>Управление системой SS1</p>
+    // Загружаем актуальные данные
+    comments = JSON.parse(localStorage.getItem('ss1_comments')) || [];
+    feedback = JSON.parse(localStorage.getItem('ss1_feedback')) || [];
+
+    let adminPage = document.getElementById('adminPage');
+    if (!adminPage) {
+        adminPage = document.createElement('div');
+        adminPage.id = 'adminPage';
+        adminPage.className = 'page';
+        adminPage.innerHTML = `
+            <div class="container">
+                <div class="header">
+                    <h1>🔧 Админ-панель</h1>
+                    <p>Управление системой SS1</p>
+                </div>
+                <div class="chat-container">
+                    <h3>⚙️ Административные функции</h3>
+                    
+                    <!-- Статистика -->
+                    <div class="stats-grid" style="margin: 20px 0;">
+                        <div class="stat-item" style="background: #e74c3c; color: white;">
+                            <div class="stat-value">${userStats.totalScans}</div>
+                            <div class="stat-label">Всего проверок</div>
                         </div>
-                        <div class="chat-container">
-                            <h3>⚙️ Административные функции</h3>
-                            
-                            <div class="stats-grid" style="margin: 20px 0;">
-                                <div class="stat-item" style="background: #e74c3c; color: white;">
-                                    <div class="stat-value">${userStats.totalScans}</div>
-                                    <div class="stat-label">Всего проверок</div>
-                                </div>
-                                <div class="stat-item" style="background: #f39c12; color: white;">
-                                    <div class="stat-value">${userStats.threatsBlocked}</div>
-                                    <div class="stat-label">Угроз заблокировано</div>
-                                </div>
-                                <div class="stat-item" style="background: #27ae60; color: white;">
-                                    <div class="stat-value">${comments.length}</div>
-                                    <div class="stat-label">Комментариев</div>
-                                </div>
-                                <div class="stat-item" style="background: #9b59b6; color: white;">
-                                    <div class="stat-value">${feedback.length}</div>
-                                    <div class="stat-label">Отзывов</div>
-                                </div>
-                            </div>
-
-                            <div style="margin: 20px 0;">
-                                <h4>🛠️ Инструменты</h4>
-                                <button class="btn" onclick="exportData()" style="background: #3498db; margin: 5px;">
-                                    📤 Экспорт данных
-                                </button>
-                                <button class="btn" onclick="clearAllData()" style="background: #e74c3c; margin: 5px;">
-                                    🗑️ Очистить все данные
-                                </button>
-                                <button class="btn" onclick="resetStatistics()" style="background: #f39c12; margin: 5px;">
-                                    🔄 Сбросить статистику
-                                </button>
-                            </div>
-
-                            <div style="margin: 20px 0;">
-                                <h4>📊 Логи системы</h4>
-                                <div style="background: #2c3e50; color: white; padding: 15px; border-radius: 10px; font-family: monospace; max-height: 200px; overflow-y: auto;">
-                                    <div>🟢 SS1 System v${APP_VERSION} запущена</div>
-                                    <div>📊 Пользовательских проверок: ${userStats.totalScans}</div>
-                                    <div>🚫 Заблокировано угроз: ${userStats.threatsBlocked}</div>
-                                    <div>💬 Комментариев: ${comments.length}</div>
-                                    <div>📝 Отзывов: ${feedback.length}</div>
-                                    <div>🕐 Последняя активность: ${new Date().toLocaleString()}</div>
-                                </div>
-                            </div>
+                        <div class="stat-item" style="background: #f39c12; color: white;">
+                            <div class="stat-value">${userStats.threatsBlocked}</div>
+                            <div class="stat-label">Угроз заблокировано</div>
+                        </div>
+                        <div class="stat-item" style="background: #27ae60; color: white;">
+                            <div class="stat-value">${comments.length}</div>
+                            <div class="stat-label">Комментариев</div>
+                        </div>
+                        <div class="stat-item" style="background: #9b59b6; color: white;">
+                            <div class="stat-value">${feedback.length}</div>
+                            <div class="stat-label">Отзывов</div>
                         </div>
                     </div>
-                `;
-                document.getElementById('mainContent').appendChild(adminPage);
-            } else {
+
+                    <!-- Управление комментариями -->
+                    <div style="margin: 30px 0;">
+                        <h4>💬 Управление комментариями</h4>
+                        <div id="adminCommentsList" style="max-height: 300px; overflow-y: auto; margin: 15px 0; border: 2px solid #ddd; border-radius: 10px; padding: 15px;">
+                            ${comments.length > 0 ? comments.map((comment, index) => `
+                                <div style="margin: 10px 0; padding: 15px; background: #f8f9fa; border-radius: 10px; border-left: 4px solid #3498db;">
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                        <strong style="color: #2c3e50;">${comment.author}</strong>
+                                        <small style="color: #7f8c8d;">${comment.date}</small>
+                                    </div>
+                                    <div style="margin-bottom: 10px;">${comment.text}</div>
+                                    <button onclick="deleteComment(${index})" style="background: #e74c3c; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 12px;">
+                                        🗑️ Удалить
+                                    </button>
+                                </div>
+                            `).join('') : '<p style="text-align: center; color: #7f8c8d;">Комментариев нет</p>'}
+                        </div>
+                    </div>
+
+                    <!-- Просмотр жалоб и идей -->
+                    <div style="margin: 30px 0;">
+                        <h4>📝 Обратная связь пользователей</h4>
+                        <div id="adminFeedbackList" style="max-height: 400px; overflow-y: auto; margin: 15px 0; border: 2px solid #ddd; border-radius: 10px; padding: 15px;">
+                            ${feedback.length > 0 ? feedback.map((item, index) => {
+                                let typeIcon = '📝';
+                                let typeColor = '#3498db';
+                                if (item.type === 'bug') {
+                                    typeIcon = '🐛';
+                                    typeColor = '#e74c3c';
+                                } else if (item.type === 'suggestion') {
+                                    typeIcon = '💡';
+                                    typeColor = '#27ae60';
+                                } else if (item.type === 'complaint') {
+                                    typeIcon = '😠';
+                                    typeColor = '#f39c12';
+                                }
+                                
+                                return `
+                                    <div style="margin: 15px 0; padding: 15px; background: #f8f9fa; border-radius: 10px; border-left: 4px solid ${typeColor};">
+                                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                            <div>
+                                                <span style="background: ${typeColor}; color: white; padding: 2px 8px; border-radius: 12px; font-size: 12px;">
+                                                    ${typeIcon} ${item.type === 'bug' ? 'Ошибка' : item.type === 'suggestion' ? 'Идея' : 'Жалоба'}
+                                                </span>
+                                                <strong style="margin-left: 10px; color: #2c3e50;">${item.author}</strong>
+                                            </div>
+                                            <small style="color: #7f8c8d;">${item.date}</small>
+                                        </div>
+                                        <div style="margin-bottom: 10px; line-height: 1.5;">${item.text}</div>
+                                        <button onclick="deleteFeedback(${index})" style="background: #e74c3c; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 12px;">
+                                            🗑️ Удалить
+                                        </button>
+                                    </div>
+                                `;
+                            }).join('') : '<p style="text-align: center; color: #7f8c8d;">Отзывов нет</p>'}
+                        </div>
+                    </div>
+
+                    <!-- Инструменты -->
+                    <div style="margin: 20px 0;">
+                        <h4>🛠️ Инструменты</h4>
+                        <button class="btn" onclick="exportData()" style="background: #3498db; margin: 5px;">
+                            📤 Экспорт данных
+                        </button>
+                        <button class="btn" onclick="clearAllData()" style="background: #e74c3c; margin: 5px;">
+                            🗑️ Очистить все данные
+                        </button>
+                        <button class="btn" onclick="resetStatistics()" style="background: #f39c12; margin: 5px;">
+                            🔄 Сбросить статистику
+                        </button>
+                    </div>
+
+                    <!-- Логи системы -->
+                    <div style="margin: 20px 0;">
+                        <h4>📊 Логи системы</h4>
+                        <div style="background: #2c3e50; color: white; padding: 15px; border-radius: 10px; font-family: monospace; max-height: 200px; overflow-y: auto;">
+                            <div>🟢 SS1 System v${APP_VERSION} запущена</div>
+                            <div>📊 Пользовательских проверок: ${userStats.totalScans}</div>
+                            <div>🚫 Заблокировано угроз: ${userStats.threatsBlocked}</div>
+                            <div>💬 Комментариев: ${comments.length}</div>
+                            <div>📝 Отзывов: ${feedback.length}</div>
+                            <div>🕐 Последняя активность: ${new Date().toLocaleString()}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.getElementById('mainContent').appendChild(adminPage);
+    } else {
+        // Обновляем существующую панель
+        adminPage.querySelector('.stat-item:nth-child(1) .stat-value').textContent = userStats.totalScans;
+        adminPage.querySelector('.stat-item:nth-child(2) .stat-value').textContent = userStats.threatsBlocked;
+        adminPage.querySelector('.stat-item:nth-child(3) .stat-value').textContent = comments.length;
+        adminPage.querySelector('.stat-item:nth-child(4) .stat-value').textContent = feedback.length;
+        
+        document.getElementById('adminCommentsList').innerHTML = comments.length > 0 ? comments.map((comment, index) => `
+            <div style="margin: 10px 0; padding: 15px; background: #f8f9fa; border-radius: 10px; border-left: 4px solid #3498db;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <strong style="color: #2c3e50;">${comment.author}</strong>
+                    <small style="color: #7f8c8d;">${comment.date}</small>
+                </div>
+                <div style="margin-bottom: 10px;">${comment.text}</div>
+                <button onclick="deleteComment(${index})" style="background: #e74c3c; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 12px;">
+                    🗑️ Удалить
+                </button>
+            </div>
+        `).join('') : '<p style="text-align: center; color: #7f8c8d;">Комментариев нет</p>';
+        
+        document.getElementById('adminFeedbackList').innerHTML = feedback.length > 0 ? feedback.map((item, index) => {
+            let typeIcon = '📝';
+            let typeColor = '#3498db';
+            if (item.type === 'bug') {
+                typeIcon = '🐛';
+                typeColor = '#e74c3c';
+            } else if (item.type === 'suggestion') {
+                typeIcon = '💡';
+                typeColor = '#27ae60';
+            } else if (item.type === 'complaint') {
+                typeIcon = '😠';
+                typeColor = '#f39c12';
+            }
+            
+            return `
+                <div style="margin: 15px 0; padding: 15px; background: #f8f9fa; border-radius: 10px; border-left: 4px solid ${typeColor};">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                        <div>
+                            <span style="background: ${typeColor}; color: white; padding: 2px 8px; border-radius: 12px; font-size: 12px;">
+                                ${typeIcon} ${item.type === 'bug' ? 'Ошибка' : item.type === 'suggestion' ? 'Идея' : 'Жалоба'}
+                            </span>
+                            <strong style="margin-left: 10px; color: #2c3e50;">${item.author}</strong>
+                        </div>
+                        <small style="color: #7f8c8d;">${item.date}</small>
+                    </div>
+                    <div style="margin-bottom: 10px; line-height: 1.5;">${item.text}</div>
+                    <button onclick="deleteFeedback(${index})" style="background: #e74c3c; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 12px;">
+                        🗑️ Удалить
+                    </button>
+                </div>
+            `;
+        }).join('') : '<p style="text-align: center; color: #7f8c8d;">Отзывов нет</p>';
+    }
+    
+    // Показываем админ-панель
+    document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+    adminPage.classList.add('active');
+    
+    document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+    
+    if (window.innerWidth <= 768) {
+        toggleSidebar();
+    }
+}
+
+// Функция удаления комментария
+function deleteComment(index) {
+    if (confirm('❌ Удалить этот комментарий?')) {
+        comments.splice(index, 1);
+        localStorage.setItem('ss1_comments', JSON.stringify(comments));
+        showAdminPage(); // Обновляем админ-панель
+        alert('✅ Комментарий удален!');
+    }
+}
+
+// Функция удаления отзыва
+function deleteFeedback(index) {
+    if (confirm('❌ Удалить этот отзыв?')) {
+        feedback.splice(index, 1);
+        localStorage.setItem('ss1_feedback', JSON.stringify(feedback));
+        showAdminPage(); // Обновляем админ-панель
+        alert('✅ Отзыв удален!');
+    }
+              }
+           
                 // Обновляем статистику в существующей панели
                 adminPage.querySelector('.stat-item:nth-child(1) .stat-value').textContent = userStats.totalScans;
                 adminPage.querySelector('.stat-item:nth-child(2) .stat-value').textContent = userStats.threatsBlocked;
