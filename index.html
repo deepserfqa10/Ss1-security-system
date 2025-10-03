@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🛡️ SS1 Security System</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial; background: #667eea; padding: 20px; color: #333; }
+        .container { max-width: 100%; background: white; border-radius: 15px; padding: 20px; margin: 0 auto; }
+        .header { background: #2c3e50; color: white; padding: 20px; border-radius: 10px; text-align: center; margin-bottom: 20px; }
+        .status { padding: 15px; margin: 10px 0; border-radius: 8px; font-weight: bold; text-align: center; }
+        .on { background: #27ae60; color: white; }
+        .off { background: #e74c3c; color: white; }
+        button { padding: 12px 25px; margin: 10px; border: none; border-radius: 6px; font-size: 16px; cursor: pointer; }
+        .btn-on { background: #27ae60; color: white; }
+        .btn-off { background: #e74c3c; color: white; }
+        .chat { background: white; padding: 20px; border-radius: 10px; margin: 20px 0; }
+        textarea { width: 100%; padding: 15px; margin: 10px 0; border: 1px solid #ddd; border-radius: 5px; min-height: 80px; }
+        .send-btn { background: #3498db; color: white; width: 100%; padding: 15px; border: none; border-radius: 5px; }
+        .response { margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; white-space: pre-line; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🛡️ SS1 Security System</h1>
+            <p>Защита от мошенников и угроз</p>
+        </div>
+        
+        <div id="status" class="status on">SS1 АКТИВИРОВАН</div>
+        
+        <div style="text-align: center;">
+            <button class="btn-on" onclick="enableSS1()">✅ ВКЛЮЧИТЬ SS1</button>
+            <button class="btn-off" onclick="disableSS1()">❌ ВЫКЛЮЧИТЬ SS1</button>
+        </div>
+        
+        <div class="chat">
+            <h3>💬 Тест системы безопасности:</h3>
+            <textarea id="message" placeholder="Введите запрос для анализа..."></textarea>
+            <button class="send-btn" onclick="sendMessage()">📤 Анализировать безопасность</button>
+            
+            <div id="response" class="response">
+                💡 Готов к работе! Введите запрос для анализа...
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let ss1Status = true;
+
+        function enableSS1() {
+            ss1Status = true;
+            document.getElementById("status").innerHTML = "SS1 АКТИВИРОВАН";
+            document.getElementById("status").className = "status on";
+            document.getElementById("response").innerHTML = "✅ SS1 активирован!";
+        }
+        
+        function disableSS1() {
+            ss1Status = false;
+            document.getElementById("status").innerHTML = "SS1 ВЫКЛЮЧЕН";
+            document.getElementById("status").className = "status off";
+            document.getElementById("response").innerHTML = "❌ SS1 деактивирован!";
+        }
+        
+        function sendMessage() {
+            const message = document.getElementById('message').value;
+            if (!message) return;
+            
+            let response = "";
+            const lower = message.toLowerCase();
+            
+            if (lower.includes('перевод') || lower.includes('деньги')) {
+                response = "🔴 ВЫСОКИЙ РИСК: Финансовое мошенничество\n✅ Проверьте получателя";
+            } else if (lower.includes('ссылка') || lower.includes('файл')) {
+                response = "🟡 СРЕДНИЙ РИСК: Фишинг-атака\n✅ Проверьте отправителя";
+            } else {
+                response = "🟢 НИЗКИЙ РИСК: Безопасный запрос";
+            }
+            
+            document.getElementById('response').innerHTML = response;
+        }
+    </script>
+</body>
+</html>
