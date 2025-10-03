@@ -650,53 +650,39 @@
 </head>
 <body>
     <!-- Боковое меню -->
-    <div class="sidebar" id="sidebar">
-        <div class="sidebar-header">
-            <h3>🛡️ SS1 Menu</h3>
-            <p>Навигация</p>
-            <div class="version">Версия 1.6</div>
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <h3>🛡️ SS1 Menu</h3>
+        <p>Навигация</p>
+        <div class="version">Версия 1.6</div>
+    </div>
+    <div class="sidebar-nav">
+        <div class="nav-item active" onclick="showPage('main')">
+            <span class="nav-icon">🏠</span>
+            <span>Главная</span>
         </div>
-        <div class="sidebar-nav">
-            <div class="nav-item active" onclick="showPage('main')">
-                <span class="nav-icon">🏠</span>
-                <span>Главная</span>
-            </div>
-            <div class="nav-item" onclick="showPage('stats')">
-                <span class="nav-icon">📊</span>
-                <span>Статистика</span>
-            </div>
-            <div class="nav-item" onclick="showPage('comments')">
-                <span class="nav-icon">💬</span>
-                <span>Комментарии</span>
-            </div>
-            <div class="nav-item" onclick="showPage('feedback')">
-                <span class="nav-icon">📝</span>
-                <span>Жалобы и идеи</span>
-            </div>
-            <div class="nav-item" onclick="showPage('settings')">
-                <span class="nav-icon">⚙️</span>
-                <span>Настройки</span>
-            <div 
-                </div>   class="nav-item" onclick="function showAdminPage() {
-    if (isAdminAuthenticated()) {
-        showPage('admin');
-        loadAdminData();
-        // Закрываем сайдбар
-        const sidebar = document.getElementById('sidebar');
-        const mainContent = document.getElementById('mainContent');
-        sidebar.classList.remove('open');
-        mainContent.classList.remove('sidebar-open');
-    } else {
-        authenticateAdmin();
-    }
-}()">
-    <span class="nav-icon">🔧</span>
-    <span>Админ-панель</span>
-            </div>
-            
-            </div>
+        <div class="nav-item" onclick="showPage('stats')">
+            <span class="nav-icon">📊</span>
+            <span>Статистика</span>
+        </div>
+        <div class="nav-item" onclick="showPage('comments')">
+            <span class="nav-icon">💬</span>
+            <span>Комментарии</span>
+        </div>
+        <div class="nav-item" onclick="showPage('feedback')">
+            <span class="nav-icon">📝</span>
+            <span>Жалобы и идеи</span>
+        </div>
+        <div class="nav-item" onclick="showPage('settings')">
+            <span class="nav-icon">⚙️</span>
+            <span>Настройки</span>
+        </div>
+        <div class="nav-item" onclick="showAdminPage()">
+            <span class="nav-icon">🔧</span>
+            <span>Админ-панель</span>
         </div>
     </div>
+</div>
 
     <!-- Кнопка меню -->
     <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
