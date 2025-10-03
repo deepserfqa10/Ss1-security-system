@@ -676,7 +676,19 @@
             <div class="nav-item" onclick="showPage('settings')">
                 <span class="nav-icon">⚙️</span>
                 <span>Настройки</span>
-            <div class="nav-item" onclick="showAdminPage()">
+            <div class="nav-item" onclick="function showAdminPage() {
+    if (isAdminAuthenticated()) {
+        showPage('admin');
+        loadAdminData();
+        // Закрываем сайдбар
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.getElementById('mainContent');
+        sidebar.classList.remove('open');
+        mainContent.classList.remove('sidebar-open');
+    } else {
+        authenticateAdmin();
+    }
+}()">
     <span class="nav-icon">🔧</span>
     <span>Админ-панель</span>
             </div>
